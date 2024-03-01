@@ -1,0 +1,6 @@
+logs/
+.env
+postgres-dbt/
+dbt/
+rust/
+__pycache__/
