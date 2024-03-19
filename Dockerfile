@@ -6,11 +6,11 @@ COPY requirements.txt /
 COPY .env /
 COPY rust /rust
 
-# Rust Dependancies
+# Rust Dependencies
 USER root
 RUN source /.env
 
-# System Package Dependancies
+# System Package Dependencies
 RUN apt-get update \
   && apt-get install -y --no-install-recommends\
     build-essential\
@@ -20,7 +20,7 @@ RUN apt-get update \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-# Rust Dependancies
+# Rust Dependencies
 RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
 
