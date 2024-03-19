@@ -6,7 +6,7 @@ update:
 	git clone https://github.com/GregorMonsonFD/SAL_extraction.git ./rust
 
 setup:
-	rm .env
+	rm -rf .env
 	rm -rf ./dbt
 	rm -rf ./rust
 

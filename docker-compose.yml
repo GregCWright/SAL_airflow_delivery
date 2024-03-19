@@ -108,7 +108,6 @@ services:
       - 5432:5432
     volumes:
       - ./postgres-dbt:/var/lib/postgresql/data
-      - /Users/gregor.monson/VSCode/SAL_extraction/stock_csv:/csv/
     environment:
       - POSTGRES_PASSWORD=development_S3cret
       - POSTGRES_USER=SAL_user
