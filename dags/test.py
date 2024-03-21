@@ -1,25 +1,20 @@
 import pendulum
-from time import sleep
 
 from airflow import DAG
+from airflow.operators.bash import BashOperator
 from airflow.decorators import task
 
-
-def expensive_api_call():
-    print("Hello from Airflow!")
-    sleep(10)
-
-
-my_expensive_response = expensive_api_call()
-
 with DAG(
-    dag_id="example_python_operator",
+    dag_id="example_bash",
     schedule=None,
     start_date=pendulum.datetime(2021, 1, 1, tz="UTC"),
     catchup=False,
     tags=["example"],
 ) as dag:
-
-    @task()
-    def print_expensive_api_call():
-        print(my_expensive_response)
+    say_hello_and_create_a_secret_number = BashOperator(
+        task_id="alphavantage"
+        #, bash_command=". /opt/airflow/rust/alphavantage_extractor -f $FUNCTION -s $SYMBOL"
+        , bash_command='cargo build --manifest-path=/opt/airflow/Cargo.toml --release'
+        , env={"FUNCTION": "TIME_SERIES_DAILY", "SYMBOL": "IBM"}
+        , append_env=True
+    )

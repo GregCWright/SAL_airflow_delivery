@@ -4,7 +4,6 @@ FROM apache/airflow:2.8.2
 # File Dependencies, requires `make setup` 
 COPY requirements.txt /
 COPY .env /
-COPY rust /rust
 
 # Rust Dependencies
 USER root
@@ -16,16 +15,10 @@ RUN apt-get update \
     build-essential\
     pkg-config\
     libssl-dev\
+    rustc\
   && apt-get autoremove -yqq --purge \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
-
-# Rust Dependencies
-RUN curl https://sh.rustup.rs -sSf | bash -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-# Build SAL_extraction
-RUN cargo build --manifest-path=/rust/Cargo.toml --release
 
 # Install Python Packages
 USER airflow
