@@ -15,6 +15,9 @@ setup:
 	git clone https://github.com/GregorMonsonFD/SAL_dbt.git ./dbt
 	git clone https://github.com/GregorMonsonFD/SAL_extraction.git ./rust
 
+build-rust:
+	cargo build --manifest-path=rust/Cargo.toml --release
+
 start:
 	docker-compose up
 
