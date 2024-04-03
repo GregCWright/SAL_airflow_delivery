@@ -1,4 +1,10 @@
-# Base Image
+# Base Images
+FROM rust as builder
+WORKDIR /app
+COPY rust /app
+RUN cargo build --release
+
+
 FROM apache/airflow:2.8.2
 
 # File Dependencies, requires `make setup` 
@@ -23,3 +29,7 @@ RUN apt-get update \
 # Install Python Packages
 USER airflow
 RUN pip install --no-cache-dir "apache-airflow==${AIRFLOW_VERSION}" -r /requirements.txt
+
+#Copy over compiled rust binaries
+COPY --from=builder /app/target/release/alphavantage_extractor /bin/rust_apps/
+COPY --from=builder /app/target/release/csv_insertion_handler /bin/rust_apps/
