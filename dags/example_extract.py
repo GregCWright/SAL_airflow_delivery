@@ -2,6 +2,7 @@ import pendulum
 import subprocess
 from airflow.operators.python import PythonOperator
 from airflow.models import Variable
+from airflow.hooks.base import BaseHook
 
 from airflow import DAG
 from airflow.operators.bash import BashOperator
@@ -26,31 +27,48 @@ with DAG(
 ) as dag:
     create_target_dir = BashOperator(
         task_id="create_target_dir"
-        , bash_command="mkdir -p /tmp/csv_output/"
+        , bash_command="mkdir -p /csv"
         , append_env=True
     )
 
     function = "TIME_SERIES_DAILY"
     symbol = "IBM"
     api_key = Variable.get("alphavantage_api_key")
-    output = "/tmp/csv_output/"
+    output = "/csv"
 
-    execute_rust_binary = \
-        PythonOperator(
-                task_id="execute_rust_binary",
-                python_callable=execute_rust_binary,
-                trigger_rule="all_success",
-                provide_context=True,
-                op_kwargs={
-                    "executable_location": "/bin/rust_apps/alphavantage_extractor",
-                    "arguments": f"-f {function} -s {symbol} -a {api_key} -o {output}"
-                }
-            )
+    execute_alphavantage = PythonOperator(
+        task_id="execute_alphavantage",
+        python_callable=execute_rust_binary,
+        trigger_rule="all_success",
+        provide_context=True,
+        op_kwargs={
+            "executable_location": "/bin/rust_apps/alphavantage_extractor",
+            "arguments": f"-f {function} -s {symbol} -a {api_key} -o {output}"
+        }
+    )
 
     list_target_dir = BashOperator(
         task_id="list_target_dir"
-        , bash_command="ls -a /tmp/csv_output/"
+        , bash_command="ls -a /csv"
         , append_env=True
     )
+
+    sal_connection = BaseHook.get_connection("sal_dbt_postgres")
+    username = sal_connection.login
+    password = sal_connection.password
+    host = sal_connection.host
+    input_directory = output
+
+
+    execute_csv_insert = PythonOperator(
+        task_id="execute_csv_insert",
+        python_callable=execute_rust_binary,
+        trigger_rule="all_success",
+        provide_context=True,
+        op_kwargs={
+            "executable_location": "/bin/rust_apps/csv_insertion_handler",
+            "arguments": f"-u {username} -p {password} --host {host} -i {input_directory}"
+        }
+    )
     
-    create_target_dir >> execute_rust_binary >> list_target_dir
+    create_target_dir >> execute_alphavantage >> list_target_dir >> execute_csv_insert

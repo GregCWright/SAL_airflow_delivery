@@ -14,6 +14,7 @@ setup:
 
 	git clone https://github.com/GregorMonsonFD/SAL_dbt.git ./dbt
 	git clone https://github.com/GregorMonsonFD/SAL_extraction.git ./rust
+	mkdir ./csv
 
 build-rust:
 	cargo build --target x86_64-unknown-linux-gnu --manifest-path=rust/Cargo.toml --release

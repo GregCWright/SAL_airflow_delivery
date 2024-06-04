@@ -73,8 +73,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-    - ${AIRFLOW_PROJ_DIR:-.}/dbt:/opt/airflow/dbt
-    - ${AIRFLOW_PROJ_DIR:-.}/rust:/opt/airflow/rust
+    - ${AIRFLOW_PROJ_DIR:-.}/csv:/csv
+    - ${AIRFLOW_PROJ_DIR:-.}/dbt:/bin/dbt_utils/
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -93,7 +93,7 @@ services:
     ports:
       - 5150:5432
     volumes:
-      - postgres-db-volume:/var/lib/postgresql/data
+      - ${AIRFLOW_PROJ_DIR:-.}/postgres-airflow:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 10s
@@ -106,7 +106,8 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - ./postgres-dbt:/var/lib/postgresql/data
+      - ${AIRFLOW_PROJ_DIR:-.}/postgres-dbt:/var/lib/postgresql/data
+      - ${AIRFLOW_PROJ_DIR:-.}/csv:/csv
     environment:
       - POSTGRES_PASSWORD=development_S3cret
       - POSTGRES_USER=SAL_user
@@ -144,6 +145,8 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
+    links:
+      - "postgres_dbt:saldatabase"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -159,6 +162,8 @@ services:
   airflow-worker:
     <<: *airflow-common
     command: celery worker
+    links:
+      - "postgres_dbt:saldatabase"
     healthcheck:
       # yamllint disable rule:line-length
       test:
@@ -292,6 +297,3 @@ services:
       <<: *airflow-common-depends-on
       airflow-init:
         condition: service_completed_successfully
-
-volumes:
-  postgres-db-volume:

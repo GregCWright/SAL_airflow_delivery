@@ -3,4 +3,6 @@ logs/
 postgres-dbt/
 dbt/
 rust/
+csv/
+postgres-airflow/
 __pycache__/
