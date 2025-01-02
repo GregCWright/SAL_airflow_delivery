@@ -50,8 +50,11 @@ x-airflow-common:
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
   build: .
+  env_file:
+    - .env_conn
   environment:
     &airflow-common-env
+    AIRFLOW_UID: 50000
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
@@ -87,8 +90,8 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: airflow
-      POSTGRES_PASSWORD: airflow
+      POSTGRES_USER: ${_POSTGRES_AIRFLOW_USER_USERNAME:-airflow}
+      POSTGRES_PASSWORD: ${_POSTGRES_AIRFLOW_USER_PASSWORD:-airflow}
       POSTGRES_DB: airflow
     ports:
       - 5150:5432
@@ -109,8 +112,8 @@ services:
       - ${AIRFLOW_PROJ_DIR:-.}/postgres-dbt:/var/lib/postgresql/data
       - ${AIRFLOW_PROJ_DIR:-.}/csv:/csv
     environment:
-      - POSTGRES_PASSWORD=development_S3cret
-      - POSTGRES_USER=SAL_user
+      - POSTGRES_PASSWORD=${_POSTGRES_DBT_USER_USERNAME:-airflow}
+      - POSTGRES_USER=${_POSTGRES_DBT_USER_PASSWORD:-airflow}
       - POSTGRES_DB=SAL
 
   redis:

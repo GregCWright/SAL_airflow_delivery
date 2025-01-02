@@ -1,0 +1,12 @@
+SAL_dbt:
+  target: postgres
+  outputs:
+    postgres:
+      type: postgres
+      host: "{{ env_var('_POSTGRES_DBT_HOST') }}"
+      user: "{{ env_var('_POSTGRES_DBT_USER_USERNAME') }}"
+      pass: "{{ env_var('_POSTGRES_DBT_USER_PASSWORD') }}"
+      port: "{{ env_var('_POSTGRES_DBT_PORT') | int }}"
+      dbname: "{{ env_var('_POSTGRES_DBT_DB_NAME') }}"
+      schema: public
+      threads: 4
