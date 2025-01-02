@@ -148,8 +148,6 @@ services:
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
-    links:
-      - "postgres_dbt:saldatabase"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
       interval: 30s
@@ -165,8 +163,6 @@ services:
   airflow-worker:
     <<: *airflow-common
     command: celery worker
-    links:
-      - "postgres_dbt:saldatabase"
     healthcheck:
       # yamllint disable rule:line-length
       test:
